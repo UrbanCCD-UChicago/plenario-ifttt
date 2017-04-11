@@ -25,8 +25,6 @@ SECRET_KEY = 'h=^f232v^vj+_g2o*-7b&d_d8=q)a=$=#*^bp^zw^5t^12k+v2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -47,6 +45,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'plenario_ifttt.middleware.IftttTokenAuthMiddleware'
 ]
 
 ROOT_URLCONF = 'plenario_ifttt.urls'
@@ -118,3 +117,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Environment variables
+
+ALLOWED_HOSTS = os.environ.get('PLENARIO_IFTTT_ALLOWED_HOSTS').split(',')
+CHANNEL_KEY = os.environ.get('PLENARIO_IFTTT_CHANNEL_KEY')
+
