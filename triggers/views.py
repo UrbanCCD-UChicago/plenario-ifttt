@@ -5,9 +5,11 @@ import uuid
 
 from datetime import datetime, timedelta
 from django.http import HttpResponse
+from plenario_ifttt import settings
 
 
-def model(dictionary):
+def model(dictionary) -> dict:
+    """Format a single data observation into a format ifttt expects"""
 
     dictionary['meta'] = {
         'id': uuid.uuid1().hex,
@@ -19,34 +21,60 @@ def model(dictionary):
     return dictionary
 
 
-def above(request):
+def query(node, feat, prop, val, dt, op) -> dict:
+    """Send a request to plenario with a simple comparison filter"""
 
-    args = json.loads(request.body.decode('utf-8'))
+    condition_tree = '"col": "{}", "val": "{}", "op": "{}"'
+    condition_tree = '{' + condition_tree.format(prop, val, op) + '}'
 
-    node = args['triggerFields']['node']
-    feature = args['triggerFields']['feature']
-    value = args['triggerFields']['value']
+    url = settings.PLENARIO_URL
+    url += '/v1/api/sensor-networks/array_of_things_chicago/query'
+    url += '?node={}&feature={}&start_datetime={}&filter={}'
+    url = url.format(node, feat, dt, condition_tree)
 
-    condition_tree = '"col": "{0}", "val": "{1}", "op": "ge"'
-    condition_tree = '{' + condition_tree.format(feature, value) + '}'
-    
-    plenario_url = 'http://plenario-private.us-east-1.elasticbeanstalk.com'
-    plenario_url += '/v1/api/sensor-networks/array_of_things_chicago/'
-    plenario_url += 'query?node={node}&feature={feature}&start_datetime={datetime}'
-    plenario_url += '&filter={condition_tree}'
+    return requests.get(url).json()
 
-    plenario_url = plenario_url.format(
-        node=node,
-        feature=feature,
-        condition_tree=condition_tree,
-        datetime=datetime.utcnow() - timedelta(minutes=6)
-    )
 
-    plenario_response = requests.get(plenario_url)
+def trigger(fn):
+    """Decorator for ifttt triggers, which all have to go through the motions
+    of extracting the query arguments and encoding the results"""
 
-    response = json.dumps({
-        'data': [model(o) for o in plenario_response.json()['data']]
-    })
+    def wrapper(request):
 
-    return HttpResponse(response)
+        # Values sent along with a polling request from ifttt
+        args = json.loads(request.body.decode('utf-8'))
+        node = args['triggerFields']['node']
+        feature = args['triggerFields']['feature']
+        value = args['triggerFields']['value']
 
+        # Queries will ask from fifteen minutes ago
+        fifteen_minutes_ago = datetime.utcnow() - timedelta(minutes=15)
+
+        results = fn(node, feature, feature, value, fifteen_minutes_ago)
+
+        # Retrieve up to three of the results
+        payload = json.dumps({
+            'data': [model(o) for o in results['data']][:3]
+        }).encode('uft-8')
+        
+        return HttpResponse(payload)
+
+    return wrapper
+
+
+@trigger
+def above(*args):
+    """For receiving alerts when some property goes above a certain value"""
+    return query(*args, 'ge')
+
+
+@trigger
+def below(*args):
+    """For receiving alerts when some property goes below a certain value"""
+    return query(*args, 'le')
+
+
+@trigger
+def equal(*args):
+    """For receiving alerts when some property is equal to a certain value"""
+    return query(*args, 'eq')

@@ -10,6 +10,6 @@ class IftttTokenAuthMiddleware(object):
     def __call__(self, request):
         ifttt_channel_key = request.META.get('HTTP_IFTTT_CHANNEL_KEY')
         if ifttt_channel_key != settings.CHANNEL_KEY:
-            return HttpResponse(status=401)
+            return HttpResponse('Invalid channel key', status=401)
         response = self.get_response(request)
         return response

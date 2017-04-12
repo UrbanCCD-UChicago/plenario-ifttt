@@ -121,6 +121,6 @@ STATIC_URL = '/static/'
 
 # Environment variables
 
-ALLOWED_HOSTS = os.environ.get('PLENARIO_IFTTT_ALLOWED_HOSTS').split(',')
-CHANNEL_KEY = os.environ.get('PLENARIO_IFTTT_CHANNEL_KEY')
-
+ALLOWED_HOSTS = os.environ['PLENARIO_IFTTT_ALLOWED_HOSTS'].split(',')
+CHANNEL_KEY = os.environ['PLENARIO_IFTTT_CHANNEL_KEY']
+PLENARIO_URL = os.environ['PLENARIO_URL']
