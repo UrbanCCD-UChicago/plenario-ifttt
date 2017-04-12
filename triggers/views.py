@@ -19,6 +19,8 @@ def fmt(dictionary, prop) -> dict:
 
     # Would be nice to have a better way of formatting this to utc
     dictionary['created_at'] = dictionary['datetime'] + 'Z'
+    dictionary['sensor'] = dictionary['feature']
+    dictionary['feature'] = prop
     dictionary['value'] = dictionary['results'][prop]
 
     return dictionary
@@ -34,8 +36,6 @@ def query(node, feat, prop, val, dt, op) -> dict:
     url += '/v1/api/sensor-networks/array_of_things_chicago/query'
     url += '?node={}&feature={}&start_datetime={}&filter={}&limit=5'
     url = url.format(node, feat, dt, condition_tree)
-
-    print(url)
 
     return requests.get(url).json()
 
