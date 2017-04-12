@@ -1,28 +1,36 @@
 import json
 
 from django.http import HttpResponse
-from django.shortcuts import render
 
 
 # https://platform.ifttt.com/docs#2-create-your-service-and-connect-to-ifttt
 def setup(request):
 
-    above = {
+    above_fixture = {
         'node': '0000001e0610ba72',
+        'sensor': 'temperature',
         'feature': 'temperature',
         'value': '0'
     }
 
-    property_comparison = {
-        'node': 'foo',
-        'curated_property': 'foo',
-        'op': 'foo',
-        'val': 'foo'
+    below_fixture = {
+        'node': '0000001e0610ba72',
+        'sensor': 'temperature',
+        'feature': 'temperature',
+        'value': '100'
+    }
+
+    equal_fixture = {
+        'node': '0000001e0610ba72',
+        'sensor': 'orientation',
+        'feature': 'x',
+        'value': '3'
     }
 
     triggers = {
-        'above': above,
-        'property_comparison': property_comparison
+        'above': above_fixture,
+        'below': below_fixture,
+        'equal': equal_fixture
     }
 
     samples = {
