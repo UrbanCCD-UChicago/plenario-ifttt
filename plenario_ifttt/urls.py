@@ -15,10 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from plenario_ifttt.ifttt import setup, status
+from plenario_ifttt.views import above, below, equal
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^ifttt/v1/', include('ifttt.urls')),
-    url(r'^ifttt/v1/test/', include('test.urls')),
-    url(r'^ifttt/v1/triggers/', include('triggers.urls'))
+    url(r'^ifttt/v1/status', status),
+    url(r'^ifttt/v1/test/setup', setup),
+    url(r'^ifttt/v1/triggers/above', above),
+    url(r'^ifttt/v1/triggers/below', below),
+    url(r'^ifttt/v1/triggers/equal', equal),
 ]

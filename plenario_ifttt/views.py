@@ -54,7 +54,7 @@ def trigger(fn):
             return HttpResponse(error('Missing trigger fields'), status=400)
 
         # It might be a bit confusing to see the feature extracted from
-        # 'property', and to see 'property' extracted from feature. This
+        # 'sensor', and to see 'property' extracted from feature. This
         # is intentional, my reasoning being that users will probably only
         # think of sensors in terms of what they report - I was hoping
         # this would make it more intuitive
@@ -74,7 +74,7 @@ def trigger(fn):
         payload = json.dumps({
             'data': [fmt(o, prop) for o in results['data']][:limit]
         })
-        
+
         return HttpResponse(payload)
 
     return wrapper
