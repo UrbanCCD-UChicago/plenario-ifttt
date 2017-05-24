@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from django.http import HttpResponse
 from plenario_ifttt import settings
 from plenario_ifttt.response import error
+from plenario_ifttt.utils import JsonUtf8Response
 
 
 def fmt(dictionary, prop) -> dict:
@@ -26,16 +27,16 @@ def fmt(dictionary, prop) -> dict:
     return dictionary
 
 
-def query(node, feat, prop, val, dt, op) -> dict:
+def query(network, node, feat, prop, val, dt, op) -> dict:
     """Send a request to plenario with a simple comparison filter"""
 
     condition_tree = '"col": "{}", "val": "{}", "op": "{}"'
     condition_tree = '{' + condition_tree.format(prop, val, op) + '}'
 
     url = settings.PLENARIO_URL
-    url += '/v1/api/sensor-networks/array_of_things_chicago/query'
+    url += '/v1/api/sensor-networks/{}/query'
     url += '?node={}&feature={}&start_datetime={}&filter={}&limit=5'
-    url = url.format(node, feat, dt, condition_tree)
+    url = url.format(network, node, feat, dt, condition_tree)
 
     return requests.get(url).json()
 
@@ -58,6 +59,7 @@ def trigger(fn):
         # is intentional, my reasoning being that users will probably only
         # think of sensors in terms of what they report - I was hoping
         # this would make it more intuitive
+        network = args['triggerFields'].get('network')
         node = args['triggerFields'].get('node')
         feature = args['triggerFields'].get('sensor')
         prop = args['triggerFields'].get('feature')
@@ -96,3 +98,34 @@ def below(*args):
 def equal(*args):
     """For receiving alerts when some property is equal to a certain value"""
     return query(*args, op='eq')
+
+
+# https://platform.ifttt.com/docs/api_reference#trigger-field-dynamic-options
+def dropdown_options(request, field):
+    """Returns json data used to populate drop down lists during the creation
+    of IFTTT applets."""
+
+    field_to_api = {
+        'node': 'nodes',
+        'sensor': 'sensors',
+        'feature': 'features'
+    }
+
+    api_endpoint = field_to_api[field]
+
+    url = settings.PLENARIO_URL
+    url += '/v1/api/sensor-networks/array_of_things_chicago/{}'
+    url = url.format(api_endpoint)
+
+    response = requests.get(url).json()
+
+    data = []
+    for e in response['data']:
+        result = {'value': ''}
+        if field == 'node':
+            result['label'] = e['properties']['id']
+        else:
+            result['label'] = e['name']
+        data.append(result)
+
+    return JsonUtf8Response({'data': data})

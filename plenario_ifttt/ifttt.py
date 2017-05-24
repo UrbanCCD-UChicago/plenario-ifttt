@@ -1,6 +1,7 @@
 import json
 
 from django.http import HttpResponse
+from plenario_ifttt.utils import JsonUtf8Response
 
 
 # https://platform.ifttt.com/docs#2-create-your-service-and-connect-to-ifttt
@@ -12,6 +13,7 @@ def status(request):
 def setup(request):
 
     above_fixture = {
+        'network': 'array_of_things_chicago',
         'node': '0000001e0610ba72',
         'sensor': 'temperature',
         'feature': 'temperature',
@@ -19,6 +21,7 @@ def setup(request):
     }
 
     below_fixture = {
+        'network': 'array_of_things_chicago',
         'node': '0000001e0610ba72',
         'sensor': 'temperature',
         'feature': 'temperature',
@@ -26,6 +29,7 @@ def setup(request):
     }
 
     equal_fixture = {
+        'network': 'array_of_things_chicago',
         'node': '0000001e0610ba72',
         'sensor': 'orientation',
         'feature': 'x',
@@ -46,8 +50,4 @@ def setup(request):
         'samples': samples
     }
 
-    response = json.dumps({
-        'data': data
-    })
-
-    return HttpResponse(response)
+    return JsonUtf8Response({'data': data})
