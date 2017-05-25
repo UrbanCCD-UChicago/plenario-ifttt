@@ -95,7 +95,7 @@ def options(request, field):
     for e in response['data']:
         result = {}
         if field == 'node':
-            result['label'] = e['properties']['id']
+            result['label'] = e['properties']['address']
             result['value'] = e['properties']['id']
         else:
             result['label'] = e['name']
