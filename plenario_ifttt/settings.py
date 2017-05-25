@@ -45,7 +45,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'plenario_ifttt.middleware.IftttTokenAuthMiddleware'
+    'plenario_ifttt.middleware.IftttTokenAuthMiddleware'
 ]
 
 ROOT_URLCONF = 'plenario_ifttt.urls'
