@@ -7,6 +7,6 @@ it must provide an API that has implemented all of IFTTT's [general API requirem
 
 ## Todos
 
-- [ ] Populate dropdowns for all triggers
+- [x] Populate dropdowns for all triggers
 - [ ] Implement location based trigger
 - [ ] Serve results over HTTPS
