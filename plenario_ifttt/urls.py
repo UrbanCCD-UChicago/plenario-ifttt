@@ -1,7 +1,7 @@
 from django.conf.urls import include, url
 from django.contrib import admin
 from plenario_ifttt.ifttt import setup, status
-from plenario_ifttt.views import alert, node_options, feature_options
+from plenario_ifttt.views import nearest, alert, node_options, feature_options
 
 
 urlpatterns = [
@@ -11,4 +11,6 @@ urlpatterns = [
     url(r'^ifttt/v1/triggers/alert/fields/node/options', node_options),
     url(r'^ifttt/v1/triggers/alert/fields/feature/options', feature_options),
     url(r'^ifttt/v1/triggers/alert', alert),
+    url(r'^ifttt/v1/triggers/nearest/fields/feature/options', feature_options),
+    url(r'^ifttt/v1/triggers/nearest', nearest),
 ]

@@ -20,6 +20,17 @@ def setup(request):
               "feature": "temperature.internal_temperature",
               "operator": "gt",
               "value": "0"
+            },
+            "nearest": {
+              "location": {
+                "lat": "42",
+                "lng": "-81",
+                "address": "Somewhere in Chicago",
+                "description": "Foobar"
+              },
+              "feature": "temperature.internal_temperature",
+              "operator": "gt",
+              "value": "0"
             }
           }
         }
