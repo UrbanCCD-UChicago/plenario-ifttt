@@ -73,33 +73,43 @@ def alert(request):
 
 
 # https://platform.ifttt.com/docs/api_reference#trigger-field-dynamic-options
-def options(request, field):
-    """Returns json data used to populate drop down lists during the creation
-    of IFTTT applets."""
-
-    field_to_api = {
-        'node': 'nodes',
-        'sensor': 'sensors',
-        'feature': 'features'
-    }
-
-    api_endpoint = field_to_api[field]
+def node_options(request):
+    """Returns json data used to populate drop down list for nodes."""
 
     url = settings.PLENARIO_URL
-    url += '/v1/api/sensor-networks/array_of_things_chicago/{}'
-    url = url.format(api_endpoint)
-
+    url += '/v1/api/sensor-networks/array_of_things_chicago/nodes'
     response = requests.get(url).json()
 
     data = []
     for e in response['data']:
-        result = {}
-        if field == 'node':
-            result['label'] = e['properties']['address']
-            result['value'] = e['properties']['id']
-        else:
-            result['label'] = e['name']
-            result['value'] = e['name']
-        data.append(result)
+        if e['properties']['address'] is not None:
+            data.append({
+                'label': e['properties']['address'],
+                'value': e['properties']['id']
+            })
+
+    return JsonUtf8Response({'data': data})
+
+
+# https://platform.ifttt.com/docs/api_reference#trigger-field-dynamic-options
+def feature_options(request):
+    """Returns json data used to populate drop down list for features."""
+
+    url = settings.PLENARIO_URL
+    url += '/v1/api/sensor-networks/array_of_things_chicago/features'
+    response = requests.get(url).json()
+
+    data = []
+    for e in response['data']:
+        properties = e['properties']
+
+        for p in properties:
+            common_name = p.get('common_name')
+
+            if common_name is not None:
+                data.append({
+                    'label': common_name,
+                    'value': '{}.{}'.format(e['name'], p['name'])
+                })
 
     return JsonUtf8Response({'data': data})
