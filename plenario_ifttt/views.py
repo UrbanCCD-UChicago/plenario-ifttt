@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from plenario_ifttt import settings
 from plenario_ifttt.response import error
 from plenario_ifttt.utils import JsonUtf8Response
+from pprint import pprint
 
 
 def fmt(dictionary, prop) -> dict:
@@ -27,10 +28,8 @@ def fmt(dictionary, prop) -> dict:
     return dictionary
 
 
-def query(node, feat, dt, val, op, limit) -> dict:
+def query(node, feat, prop, dt, val, op, limit) -> dict:
     """Send a request to plenario with a simple comparison filter"""
-
-    prop = feat.rsplit('.', 1)[-1]
 
     condition_tree = '"col": "{}", "val": "{}", "op": "{}"'
     condition_tree = '{' + condition_tree.format(prop, val, op) + '}'
@@ -38,7 +37,7 @@ def query(node, feat, dt, val, op, limit) -> dict:
     url = settings.PLENARIO_URL
     url += '/v1/api/sensor-networks/array_of_things_chicago/query'
     url += '?node={}&feature={}&start_datetime={}&filter={}&limit={}'
-    url = url.format(node, feat, dt, condition_tree)
+    url = url.format(node, feat, dt, condition_tree, limit)
 
     return requests.get(url).json()
 
@@ -53,20 +52,24 @@ def alert(request):
         return HttpResponse(error('Missing trigger fields'), status=400)
 
     node = args['triggerFields'].get('node')
-    feature = args['triggerFields'].get('feature')
+    feature, prop = args['triggerFields'].get('feature').rsplit('.', 1)
     op = args['triggerFields'].get('operator')
     value = args['triggerFields'].get('value')
 
-    if not all({node, prop, op, value}):
+    if not all({node, feature, op, value}):
         return HttpResponse(error('Invalid trigger fields'), status=400)
 
     # Set up the query and only ask for the top n values from 15 minutes ago
     limit = args['limit'] if args.get('limit') is not None else 3
     fifteen_minutes_ago = datetime.utcnow() - timedelta(minutes=15)
-    results = query(node, feature, fifteen_minutes_ago, value, op, limit)
+    results = query(node, feature, prop, fifteen_minutes_ago, value, op, limit)
+
+    pprint(results)
 
     payload = json.dumps({
-        'data': [fmt(o, prop) for o in results['data']]
+        # The [:limit] fulfills ifttt's requirement that a limit of 0 means
+        # no results
+        'data': [fmt(o, prop) for o in results['data']][:limit]
     })
 
     return HttpResponse(payload)
